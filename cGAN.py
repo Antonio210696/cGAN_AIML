@@ -31,12 +31,16 @@ class Generator(nn.Module):
 			return layers 
 
 		self.generator = nn.Sequential(
-			*init(latentdim + n_classes, self.depth), 
-			*init(self.depth, self.depth * 2), 
-			*init(self.depth * 2, self.depth * 4), 
-			*init(self.depth * 4, self.depth * 8),
-            nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
-            nn.Tanh()    
+			#*init(latentdim + n_classes, self.depth), 
+			#*init(self.depth, self.depth * 2), 
+			#*init(self.depth * 2, self.depth * 4), 
+			#*init(self.depth * 4, self.depth * 8),
+            nn.ReLU(inplace=True),
+            nn.Sigmoid(),
+            nn.ConvTranspose2d(1, 80, 10, 1, bias=False)
+            nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
+            # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
+            # nn.Tanh()    
 			)
 
 	# torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
