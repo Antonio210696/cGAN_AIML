@@ -1,7 +1,6 @@
 import numpy as np  
 import os 
 import random
-import celeba
 
 import torch 
 from torch.autograd import Variable
