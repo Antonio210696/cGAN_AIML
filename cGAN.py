@@ -44,11 +44,11 @@ class Generator(nn.Module):
 			return layers 
 
 		self.generator = nn.Sequential(
-			*init(latentdim + n_classes, self.depth*batch_size),
+			*init(latentdim + n_classes, self.depth),
 			#*init(self.depth, self.depth * 2), 
 			#*init(self.depth * 2, self.depth * 4), 
 			#*init(self.depth * 4, self.depth * 8),
-            nn.Linear(self.depth*batch_size, self.depth*batch_size),
+            nn.Linear(self.depth, self.depth),
             nn.Sigmoid(),
 			Reshape(batch_size, 80, 10, 10),
             nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
