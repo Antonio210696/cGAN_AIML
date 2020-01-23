@@ -16,12 +16,25 @@ import torch.nn as nn
 import torch.nn.functional as F 
 import torchvision.utils as vutils
 
+#reshape layer
+class Reshape(nn.Module):
+    def __init__(self, *args):
+        super(Reshape, self).__init__()
+        self.shape = args
+
+    def forward(self, x):
+        return x.view(self.shape)
+
+
+
 # Generator Class
 class Generator(nn.Module): 
-	def __init__(self):
+	def __init__(self, n_classes,latentdim, batch_size, dataset_name, img_shape):
 		super(Generator, self).__init__()
 		self.label_embed = nn.Embedding(n_classes, n_classes) # mi crea un dizionario di 10 elementi, ogni elemento è a sua volta un vettore di 10 elementi
-		self.depth = 128 # dimensione output primo layer
+		self.dataset_name=dataset_name
+		self.img_shape=img_shape
+		self.depth = 8000 # dimensione output primo layer
 
 		def init(input, output, normalize=True): 
 			layers = [nn.Linear(input, output)]
@@ -31,21 +44,21 @@ class Generator(nn.Module):
 			return layers 
 
 		self.generator = nn.Sequential(
-			#*init(latentdim + n_classes, self.depth), 
+			*init(latentdim + n_classes, self.depth*batch_size),
 			#*init(self.depth, self.depth * 2), 
 			#*init(self.depth * 2, self.depth * 4), 
 			#*init(self.depth * 4, self.depth * 8),
-            nn.ReLU(inplace=True),
+            nn.Linear(self.depth*batch_size, self.depth*batch_size),
             nn.Sigmoid(),
-            nn.ConvTranspose2d(1, 80, 10, 1, bias=False)
+			Reshape(batch_size, 80, 10, 10),
             nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
 			)
 
 	# torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
-	def forward(self, noise, labels): 
-		if dataset_name!='celeb':
+	def forward(self, noise, labels):
+		if self.dataset_name!='celeb':
 			print("Requested labels", labels.size(), labels)
 			# in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
 			# label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
@@ -66,16 +79,17 @@ class Generator(nn.Module):
 		#	print("Input to generator size",gen_input.size())
 			
 		img = self.generator(gen_input)
-		img = img.view(img.size(0), *img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
+		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
 		return img
 
 class Discriminator(nn.Module): 
-	def __init__(self): 
+	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name): 
 		super(Discriminator, self).__init__()
 		self.label_embed1 = nn.Embedding(n_classes, n_classes)
-		self.dropout = 0.4 
+		self.dropout = 0.4
+		self.dataset_name=dataset_name
 		self.depth = 512
-
+    
 		def init(input, output, normalize=True): 
 			layers = [nn.Linear(input, output)]
 			if normalize: 
@@ -91,12 +105,77 @@ class Discriminator(nn.Module):
 			nn.Sigmoid()  # classify as true or false
 			)
 
-	def forward(self, img, labels): 
+	def forward(self, img, labels):
 		imgs = img.view(img.size(0), -1)
-		if dataset_name=='celeb':  
+		if self.dataset_name=='celeb':
 			inpu = torch.cat((imgs, labels.float()), -1)
 		else:	
 			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
 		
 		validity = self.discriminator(inpu)
-		return validity 
+		return validity
+
+
+class ConvDiscriminator(nn.Module):
+	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name):
+		super(Discriminator, self).__init__()
+		self.label_embed1 = nn.Embedding(n_classes, n_classes)
+		self.dropout = 0.4
+		self.dataset_name = dataset_name
+		self.depth = 512
+
+		def init(input, output, normalize=True):
+			layers = [nn.Linear(input, output)]
+			if normalize:
+				layers.append(nn.Dropout(self.dropout))
+			layers.append(nn.LeakyReLU(0.2, inplace=True))
+			return layers
+
+		self.discriminator = nn.Sequential(
+			*init(n_classes + int(np.prod(img_shape)), self.depth, normalize=False),
+			*init(self.depth, self.depth),
+			*init(self.depth, self.depth),
+			nn.Linear(self.depth, 1),
+			nn.Sigmoid()  # classify as true or false
+		)
+
+	def forward(self, img, labels):
+		imgs = img.view(img.size(0), -1)
+		if self.dataset_name == 'celeb':
+			inpu = torch.cat((imgs, labels.float()), -1)
+		else:
+			inpu = torch.cat((imgs, self.label_embed1(labels)),
+							 -1)  # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
+
+		validity = self.discriminator(inpu)
+		return validity
+
+class Maxout(nn.Module):
+    def __init__(self, d_in, d_out, pool_size):
+        super().__init__()
+        self.d_in, self.d_out, self.pool_size = d_in, d_out, pool_size
+        self.lin = nn.Linear(d_in, d_out * pool_size)
+
+    def forward(self, inputs):
+        shape = list(inputs.size())
+        shape[-1] = self.d_out
+        shape.append(self.pool_size)
+        max_dim = len(shape) - 1
+        out = self.lin(inputs)
+        m, i = out.view(*shape).max(max_dim)
+        return m
+
+
+class MaxoutConv(nn.Module):
+    def __init__(self, output):
+        super(MaxoutConv, self).__init__()
+
+        self.discriminator = nn.Sequential(
+            nn.Conv2d(),
+            Maxout(),
+            nn.MaxPool2d()
+        )
+
+    def forward(self, x):
+        x = self.discriminator(x)
+        return x
