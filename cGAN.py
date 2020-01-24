@@ -82,7 +82,7 @@ class Generator(nn.Module):
 		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
 		return img
 
-class Discriminator1(nn.Module): 
+class Discriminator(nn.Module): 
 
 	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name): 
 		super(Discriminator, self).__init__()
@@ -116,8 +116,8 @@ class Discriminator1(nn.Module):
 		validity = self.discriminator(inpu)
 		return validity 
 
-class Discriminator(nn.Module):
-    def __init__(self, ngpu):
+class Discriminator1(nn.Module):
+    def __init__(self, ngpu, ndf=64, nc=3):
         super(Discriminator, self).__init__()
         self.ngpu = ngpu
         self.main = nn.Sequential(
