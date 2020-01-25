@@ -118,9 +118,8 @@ class Discriminator(nn.Module):
 		return validity 
 
 class Discriminator1(nn.Module):
-	def __init__(self, ngpu, ndf=64, nc=3):
+	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name, ndf=64, nc=3):
 		super(Discriminator, self).__init__()
-		self.ngpu = ngpu
 		self.depth = 64*64*nc
 		self.linear = nn.Sequential(
 			nn.Linear(n_classes+int(np.prod(img_shape)), self.depth),
@@ -155,5 +154,6 @@ class Discriminator1(nn.Module):
 			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
 		
 		
+		inpu = self.linear(inpu)
 		validity = self.main(inpu)
 		return validity 
