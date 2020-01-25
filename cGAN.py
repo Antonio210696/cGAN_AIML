@@ -51,7 +51,7 @@ class Generator(nn.Module):
             nn.Linear(self.depth, self.depth),
             nn.Sigmoid(),
 			Reshape(batch_size, 80, 10, 10), 
-			nn.BatchNorm2d(10),
+			nn.BatchNorm2d(80),
             nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
@@ -118,34 +118,34 @@ class Discriminator(nn.Module):
 		return validity 
 
 class Discriminator1(nn.Module):
-    def __init__(self, ngpu, ndf=64, nc=3):
-        super(Discriminator, self).__init__()
-        self.ngpu = ngpu
+	def __init__(self, ngpu, ndf=64, nc=3):
+		super(Discriminator, self).__init__()
+		self.ngpu = ngpu
 		self.depth = 64*64*nc
 		self.linear = nn.Sequential(
 			nn.Linear(n_classes+int(np.prod(img_shape)), self.depth),
 			Reshape(nc, 64, 64)
 		)
-        self.main = nn.Sequential(
-            # input is (nc) x 64 x 64
-            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf) x 32 x 32
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*8) x 4 x 4
-            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
-            nn.Sigmoid()
-        )
+		self.main = nn.Sequential(
+			# input is (nc) x 64 x 64
+			nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. (ndf) x 32 x 32
+			nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+			nn.BatchNorm2d(ndf * 2),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. (ndf*2) x 16 x 16
+			nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+			nn.BatchNorm2d(ndf * 4),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. (ndf*4) x 8 x 8
+			nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+			nn.BatchNorm2d(ndf * 8),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. (ndf*8) x 4 x 4
+			nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+			nn.Sigmoid()
+		)
 
 	def forward(self, img, labels):
 		imgs = img.view(img.size(0), -1)
