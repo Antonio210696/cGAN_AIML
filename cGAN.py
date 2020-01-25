@@ -121,6 +121,11 @@ class Discriminator1(nn.Module):
     def __init__(self, ngpu, ndf=64, nc=3):
         super(Discriminator, self).__init__()
         self.ngpu = ngpu
+		self.depth = 64*64*nc
+		self.linear = nn.Sequential(
+			nn.Linear(n_classes+int(np.prod(img_shape)), self.depth),
+			Reshape(nc, 64, 64)
+		)
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
             nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
@@ -142,5 +147,13 @@ class Discriminator1(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, input):
-        return self.main(input)
+	def forward(self, img, labels):
+		imgs = img.view(img.size(0), -1)
+		if self.dataset_name=='celeb':
+			inpu = torch.cat((imgs, labels.float()), -1)
+		else:	
+			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
+		
+		
+		validity = self.main(inpu)
+		return validity 
