@@ -50,7 +50,8 @@ class Generator(nn.Module):
 			#*init(self.depth * 4, self.depth * 8),
             nn.Linear(self.depth, self.depth),
             nn.Sigmoid(),
-			Reshape(batch_size, 80, 10, 10),
+			Reshape(batch_size, 80, 10, 10), 
+			nn.BatchNorm2d(10),
             nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
