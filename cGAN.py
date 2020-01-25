@@ -52,7 +52,8 @@ class Generator(nn.Module):
             nn.Sigmoid(),
 			Reshape(batch_size, 80, 10, 10), 
 			nn.BatchNorm2d(80),
-            nn.ConvTranspose2d(80, 3, 5, 3, bias=False)
+			nn.ConvTranspose2d(80, 30, 3, 1, bias=False)
+            nn.ConvTranspose2d(80, 3, 10, 2, bias=False)
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
 			)
@@ -83,7 +84,7 @@ class Generator(nn.Module):
 		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
 		return img
 
-class Discriminator1(nn.Module): 
+class Discriminator(nn.Module): 
 
 	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name): 
 		super(Discriminator, self).__init__()
@@ -117,7 +118,7 @@ class Discriminator1(nn.Module):
 		validity = self.discriminator(inpu)
 		return validity 
 
-class Discriminator(nn.Module):
+class Discriminator1(nn.Module):
 	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name, ndf=64, nc=3):
 		super(Discriminator, self).__init__()
 		self.depth = 64*64*nc
