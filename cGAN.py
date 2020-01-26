@@ -81,7 +81,6 @@ class Generator(nn.Module):
 			
 		img = self.generator(gen_input)
 		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
-		print("I do the forward")
 		return img
 
 class Discriminator(nn.Module): 
