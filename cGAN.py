@@ -84,41 +84,8 @@ class Generator(nn.Module):
 		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
 		return img
 
-class Discriminator(nn.Module): 
 
-	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name): 
-		super(Discriminator, self).__init__()
-		self.label_embed1 = nn.Embedding(n_classes, n_classes)
-		self.dropout = 0.4
-		self.dataset_name=dataset_name
-		self.depth = 512
-    
-		def init(input, output, normalize=True): 
-			layers = [nn.Linear(input, output)]
-			if normalize: 
-				layers.append(nn.Dropout(self.dropout))
-			layers.append(nn.LeakyReLU(0.2, inplace=True))
-			return layers 
-
-		self.discriminator = nn.Sequential(
-			*init(n_classes + int(np.prod(img_shape)), self.depth, normalize=False),
-			*init(self.depth, self.depth), 
-			*init(self.depth, self.depth),
-			nn.Linear(self.depth, 1),
-			nn.Sigmoid()  # classify as true or false
-			)
-
-	def forward(self, img, labels):
-		imgs = img.view(img.size(0), -1)
-		if self.dataset_name=='celeb':
-			inpu = torch.cat((imgs, labels.float()), -1)
-		else:	
-			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
-		
-		validity = self.discriminator(inpu)
-		return validity 
-
-class Discriminator1(nn.Module):
+class Discriminator(nn.Module):
 	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name, ndf=64, nc=3):
 		super(Discriminator, self).__init__()
 		self.depth = 64*64*nc
