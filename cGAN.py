@@ -25,6 +25,7 @@ class Reshape(nn.Module):
     def forward(self, x):
         return x.view(self.shape)
 
+preferred_dataset = 'lfwcrop'
 
 
 # Generator Class
@@ -60,7 +61,7 @@ class Generator(nn.Module):
 
 	# torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
 	def forward(self, noise, labels):
-		if self.dataset_name!='celeb':
+		if self.dataset_name!=preferred_dataset:
 			print("Requested labels", labels.size(), labels)
 			# in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
 			# label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
@@ -117,7 +118,7 @@ class Discriminator(nn.Module):
 
 	def forward(self, img, labels):
 		imgs = img.view(img.size(0), -1)
-		if self.dataset_name=='celeb':
+		if self.dataset_name==preferred_dataset:
 			inpu = torch.cat((imgs, labels.float()), -1)
 		else:	
 			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
