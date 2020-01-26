@@ -52,7 +52,7 @@ class Generator(nn.Module):
             nn.Sigmoid(),
 			Reshape(batch_size, 80, 10, 10), 
 			nn.BatchNorm2d(80),
-			nn.ConvTranspose2d(80, 30, 3, 1, bias=False)
+			nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
             nn.ConvTranspose2d(80, 3, 10, 2, bias=False)
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
@@ -116,46 +116,4 @@ class Discriminator(nn.Module):
 			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
 		
 		validity = self.discriminator(inpu)
-		return validity 
-
-class Discriminator1(nn.Module):
-	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name, ndf=64, nc=3):
-		super(Discriminator, self).__init__()
-		self.depth = 64*64*nc
-		self.dataset_name=dataset_name
-		self.linear = nn.Sequential(
-			nn.Linear(n_classes+int(np.prod(img_shape)), self.depth),
-			Reshape(nc, 64, 64)
-		)
-		self.main = nn.Sequential(
-			# input is (nc) x 64 x 64
-			nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-			nn.LeakyReLU(0.2, inplace=True),
-			# state size. (ndf) x 32 x 32
-			nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-			nn.BatchNorm2d(ndf * 2),
-			nn.LeakyReLU(0.2, inplace=True),
-			# state size. (ndf*2) x 16 x 16
-			nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-			nn.BatchNorm2d(ndf * 4),
-			nn.LeakyReLU(0.2, inplace=True),
-			# state size. (ndf*4) x 8 x 8
-			nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-			nn.BatchNorm2d(ndf * 8),
-			nn.LeakyReLU(0.2, inplace=True),
-			# state size. (ndf*8) x 4 x 4
-			nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
-			nn.Sigmoid()
-		)
-
-	def forward(self, img, labels):
-		imgs = img.view(img.size(0), -1)
-		if self.dataset_name=='celeb':
-			inpu = torch.cat((imgs, labels.float()), -1)
-		else:	
-			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
-		
-		
-		inpu = self.linear(inpu)
-		validity = self.main(inpu)
 		return validity 
