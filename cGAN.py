@@ -55,9 +55,9 @@ class Generator(nn.Module):
 			nn.BatchNorm2d(80),
 			nn.Relu(),
 			nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
-			nn.Relu(),
-            nn.ConvTranspose2d(30, 3, 20, 4, bias=False)
-			nn.Relu()
+			nn.ReLu(),
+            nn.ConvTranspose2d(30, 3, 20, 4, bias=False),
+			nn.ReLu()
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
 			)
