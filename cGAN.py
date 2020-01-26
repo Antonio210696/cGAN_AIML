@@ -93,7 +93,7 @@ class Discriminator(nn.Module):
 		self.dataset_name=dataset_name
 		self.linear = nn.Sequential(
 			nn.Linear(n_classes+int(np.prod(img_shape)), self.depth),
-			Reshape(nc, 64, 64)
+			Reshape(batch_size, nc, 64, 64)
 		)
 		self.main = nn.Sequential(
 			# input is (nc) x 64 x 64
