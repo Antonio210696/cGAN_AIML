@@ -53,14 +53,12 @@ class Generator(nn.Module):
 			Reshape(batch_size, 80, 10, 10), 
 			nn.BatchNorm2d(80),
 			nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
-            nn.ConvTranspose2d(80, 3, 10, 2, bias=False)
-            # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
-            # nn.Tanh()    
+            nn.ConvTranspose2d(30, 3, 20, 4, bias=False) # the output will be 64 (divide by 2 kernel and stride to obtain 32)
 			)
 
 	# torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
 	def forward(self, noise, labels):
-		if self.dataset_name!='celeb':
+		if self.dataset_name!='lfwcrop':
 			print("Requested labels", labels.size(), labels)
 			# in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
 			# label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
