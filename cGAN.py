@@ -82,35 +82,55 @@ class Generator(nn.Module):
 		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
 		return img
 
-class Discriminator(nn.Module): 
-	def __init__(self, n_classes, latentdim, batch_size, img_shape, dataset_name): 
-		super(Discriminator, self).__init__()
-		self.label_embed1 = nn.Embedding(n_classes, n_classes)
-		self.dropout = 0.4
-		self.dataset_name=dataset_name
-		self.depth = 512
-    
-		def init(input, output, normalize=True): 
-			layers = [nn.Linear(input, output)]
-			if normalize: 
-				layers.append(nn.Dropout(self.dropout))
-			layers.append(nn.LeakyReLU(0.2, inplace=True))
-			return layers 
+class Maxout(nn.Module):
+    def __init__(self, pool_size):
+        super().__init__()
+        self._pool_size = pool_size
 
-		self.discriminator = nn.Sequential(
-			*init(n_classes + int(np.prod(img_shape)), self.depth, normalize=False),
-			*init(self.depth, self.depth), 
-			*init(self.depth, self.depth),
-			nn.Linear(self.depth, 1),
-			nn.Sigmoid()  # classify as true or false
-			)
+    def forward(self, x):
+        assert x.shape[-1] % self._pool_size == 0, \
+            'Wrong input last dim size ({}) for Maxout({})'.format(x.shape[-1], self._pool_size)
+        m, i = x.view(*x.shape[:-1], x.shape[-1] // self._pool_size, self._pool_size).max(-1)
+        return m
 
-	def forward(self, img, labels):
-		imgs = img.view(img.size(0), -1)
-		if self.dataset_name=='celeb':
-			inpu = torch.cat((imgs, labels.float()), -1)
-		else:	
-			inpu = torch.cat((imgs, self.label_embed1(labels)), -1) # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
-		
-		validity = self.discriminator(inpu)
-		return validity 
+class MaxoutConv(nn.Module):
+    def __init__(self,pool_size, kernel_size, stride):
+        super(MaxoutConv, self).__init__()
+
+        self.discriminator = nn.Sequential(
+            Maxout(pool_size),
+            nn.MaxPool2d()
+        )
+
+    def forward(self, x):
+        x = self.discriminator(x)
+        return x
+
+
+def __init__(self, ngpu):
+    super(Discriminator, self).__init__()
+    self.ngpu = ngpu
+    self.main = nn.Sequential(
+        # input is (nc) x 64 x 64
+        nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf) x 32 x 32
+        nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+        nn.BatchNorm2d(ndf * 2),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*2) x 16 x 16
+        nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+        nn.BatchNorm2d(ndf * 4),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*4) x 8 x 8
+        nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+        nn.BatchNorm2d(ndf * 8),
+        nn.LeakyReLU(0.2, inplace=True),
+        # state size. (ndf*8) x 4 x 4
+        nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+        nn.Sigmoid()
+    )
+
+
+def forward(self, input):
+    return self.main(input)
