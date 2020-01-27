@@ -110,7 +110,6 @@ class Discriminator(nn.Module):
         self.dataset_name = dataset_name
         self.linear = nn.Sequential(
             nn.Linear(n_classes + int(np.prod(img_shape)), self.depth),
-            Reshape(batch_size, nc, 64, 64)
         )
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
@@ -133,7 +132,7 @@ class Discriminator(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, img, labels):
+    def forward(self, img, labels, b_size):
         imgs = img.view(img.size(0), -1)
         if self.dataset_name == preferred_dataset:
             inpu = torch.cat((imgs, labels.float()), -1)
@@ -141,6 +140,6 @@ class Discriminator(nn.Module):
             inpu = torch.cat((imgs, self.label_embed1(labels)),
                              -1)  # associa all'immagine generata (che contiene più cifre da riconoscere) le labels che erano state richieste
 
-        inpu = self.linear(inpu)
+        inpu = self.linear(inpu).view(b_size, 3, 64, 64)
         validity = self.main(inpu)
         return validity
