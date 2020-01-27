@@ -97,7 +97,7 @@ class Generator(nn.Module):
 
         step1 = self.generator_step1(gen_input)
         reshape=step1.view(b_size,512,4,4)
-        img=self.generator_step1(reshape)
+        img=self.generator_step2(reshape)
         img = img.view(img.size(0),
                        *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
         return img
