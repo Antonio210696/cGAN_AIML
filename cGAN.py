@@ -54,18 +54,18 @@ class Generator(nn.Module):
         )
         self.generator_step2=nn.Sequential(
             nn.BatchNorm2d(512),
-            nn.ReLU(),             #ngf=64 ndf=64
+            nn.ReLU(),
             # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(64 * 8, ngf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
+            nn.ConvTranspose2d(64 * 8, 64* 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(64 * 4),
             nn.ReLU(True),
             # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(64 * 4, ngf * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(64 * 2),
             nn.ReLU(True),
             # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(64 * 2, ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf),
+            nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(64),
             nn.ReLU(True),
             # state size. (ngf) x 32 x 32
             nn.ConvTranspose2d(64, nc, 4, 2, 1, bias=False),
