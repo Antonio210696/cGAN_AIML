@@ -27,7 +27,6 @@ class Reshape(nn.Module):
 
 preferred_dataset = 'lfwcrop'
 
-
 # Generator Class
 class Generator(nn.Module): 
 	def __init__(self, n_classes,latentdim, batch_size, dataset_name, img_shape):
@@ -35,7 +34,7 @@ class Generator(nn.Module):
 		self.label_embed = nn.Embedding(n_classes, n_classes) # mi crea un dizionario di 10 elementi, ogni elemento è a sua volta un vettore di 10 elementi
 		self.dataset_name=dataset_name
 		self.img_shape=img_shape
-		self.depth = 8000 # dimensione output primo layer
+		self.depth = 16000 # dimensione output primo layer
 
 		def init(input, output, normalize=True): 
 			layers = [nn.Linear(input, output)]
@@ -49,15 +48,18 @@ class Generator(nn.Module):
 			#*init(self.depth, self.depth * 2), 
 			#*init(self.depth * 2, self.depth * 4), 
 			#*init(self.depth * 4, self.depth * 8),
-            nn.Linear(latentdim + n_classes, self.depth),
-            nn.Sigmoid(),
-			Reshape(batch_size, 80, 10, 10), 
-			nn.BatchNorm2d(80),
+			Reshape(batch_size, 40, 20, 20), 
+			nn.BatchNorm2d(40),
 			nn.ReLU(),
-			nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
+			nn.ConvTranspose2d(40, 20, 7, 2, bias=False), # out 46
+			nn.BatchNorm2d(20),
 			nn.ReLU(),
-            nn.ConvTranspose2d(30, 3, 20, 4, bias=False),
-			nn.ReLU()
+            nn.ConvTranspose2d(20, 10, 5, 1, bias=False), # out 50
+			nn.BatchNorm2d(10),
+			nn.ReLU(),
+            nn.ConvTranspose2d(10, 3, 15, 1, bias=False), # out 64
+			nn.BatchNorm2d(3),
+			nn.ReLU(),
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()    
 			)
