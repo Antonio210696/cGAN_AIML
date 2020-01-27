@@ -48,6 +48,8 @@ class Generator(nn.Module):
 			#*init(self.depth, self.depth * 2), 
 			#*init(self.depth * 2, self.depth * 4), 
 			#*init(self.depth * 4, self.depth * 8),
+			nn.Linear(n_classes+latentdim, self.depth),
+			nn.Sigmoid(),
 			Reshape(batch_size, 40, 20, 20), 
 			nn.BatchNorm2d(40),
 			nn.ReLU(),
