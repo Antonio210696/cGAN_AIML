@@ -48,7 +48,7 @@ class Generator(nn.Module):
             layers.append(nn.LeakyReLU(0.2, inplace=True))
             return layers
 
-        self.generator_step1 = nn.Sequential(
+        self.generator = nn.Sequential(
             nn.Linear(latentdim + n_classes, self.depth),
             nn.Sigmoid(),
             Reshape(batch_size, 80, 10, 10),
