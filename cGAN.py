@@ -50,103 +50,45 @@ class Generator(nn.Module):
 
         self.generator_step1 = nn.Sequential(
             nn.Linear(latentdim + n_classes, self.depth),
-<<<<<<< HEAD
-            nn.ReLU(),
-            nn.Linear(self.depth, self.depth*2),
-            nn.ReLU(),
-            nn.Linear(self.depth*2, self.depth*4),
-            nn.ReLU(),
-            nn.Linear(self.depth*4, self.depth),
-            nn.Sigmoid()
-        )
-        self.generator_step2=nn.Sequential(
-            nn.BatchNorm2d(512),
-            nn.ReLU(),             #ngf=64 ndf=64
-            # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(64 * 8, 64 * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64 * 4),
-            nn.ReLU(True),
-            # state size. (64*4) x 8 x 8
-            nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64 * 2),
-            nn.ReLU(True),
-            # state size. (64*2) x 16 x 16
-            nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(True),
-            # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d(64, nc, 4, 2, 1, bias=False),
-            nn.Tanh()
-
-        )
-
-    # torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
-    def forward(self, noise, labels, b_size):
-        if self.dataset_name != preferred_dataset:
-            print("Requested labels", labels.size(), labels)
-            # in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
-            # label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
-            # il noise ha dimensione 64x100 (64 immagini, un immagine per ogni riga )
-            # ECCO IL MISTERIOSO EMBEDDING
-            # al noise vengono aggiunte 10 colonne, che sono le 10 colonne delle label, quindi ogni riga di gen_input è 100 pixel di noise + 10 float che rappresentano la label che vogliamo per quell'immagine. Questo è l'embedding
-            gen_input = torch.cat((self.label_embed(labels), noise), -1)
-            print("conditional vector size", self.label_embed(labels).size())
-            print("Input to generator size", gen_input.size())
-        else:
-            '''
-                tentativo1: concateniamo al noise direttamente il vettore binario coi 40 attributi, senza nessun mapping. labels sarà una matrice binaria
-                di 64x40
-            '''
-            #	print("Requested labels", labels.size(), labels)
-            gen_input = torch.cat((labels, noise), -1)
-        #	print("conditional vector size", labels.size())
-        #	print("Input to generator size",gen_input.size())
-
-        step1 = self.generator_step1(gen_input)
-        reshape=step1.view(b_size,512,4,4)
-        img=self.generator_step1(reshape)
-        img = img.view(img.size(0),
-                       *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
-        return img
-=======
             nn.Sigmoid(),
-			Reshape(batch_size, 80, 10, 10), 
-			nn.BatchNorm2d(80),
-			nn.Relu(),
-			nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
-			nn.ReLu(),
+            Reshape(batch_size, 80, 10, 10),
+            nn.BatchNorm2d(80),
+            nn.Relu(),
+            nn.ConvTranspose2d(80, 30, 3, 1, bias=False),
+            nn.ReLu(),
             nn.ConvTranspose2d(30, 3, 20, 4, bias=False),
-			nn.ReLu()
+            nn.ReLu()
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
-            # nn.Tanh()    
-			)
+            # nn.Tanh()
+        )
 
-	# torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
-	def forward(self, noise, labels):
-		if self.dataset_name!=preferred_dataset:
-			print("Requested labels", labels.size(), labels)
-			# in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
-			# label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
-			# il noise ha dimensione 64x100 (64 immagini, un immagine per ogni riga )
-			# ECCO IL MISTERIOSO EMBEDDING
-			# al noise vengono aggiunte 10 colonne, che sono le 10 colonne delle label, quindi ogni riga di gen_input è 100 pixel di noise + 10 float che rappresentano la label che vogliamo per quell'immagine. Questo è l'embedding
-			gen_input = torch.cat((self.label_embed(labels), noise), -1)    
-			print("conditional vector size", self.label_embed(labels).size())
-			print("Input to generator size",gen_input.size())
-		else:
-			'''
-				tentativo1: concateniamo al noise direttamente il vettore binario coi 40 attributi, senza nessun mapping. labels sarà una matrice binaria
-				di 64x40
-			'''
-		#	print("Requested labels", labels.size(), labels)
-			gen_input = torch.cat((labels, noise), -1)    
-		#	print("conditional vector size", labels.size())
-		#	print("Input to generator size",gen_input.size())
-			
-		img = self.generator(gen_input)
-		img = img.view(img.size(0), *self.img_shape) # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
-		return img
->>>>>>> parent of dedea10... fixing typos
+        # torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
+        def forward(self, noise, labels):
+            if self.dataset_name != preferred_dataset:
+                print("Requested labels", labels.size(), labels)
+                # in pratica ogni label che noi vogliamo (es: digit 9, digit 3..) fa da chiave nel dizionario label_embed (una hash table) a un vettore di 10 elementi. Questi 10 elementi sono casuali e diversi per ogni label (es: la label 3 sarà una roba tipo [-0.24, 0-7...] con 10 elementi)
+                # label_embed(labels) avrà quindi 64 (dimensione di un batch che produciamo alla volta, ergo 64 immagini finte) x10 (ogni label richiesta come detto è tradotta in un vettore di 10 elementi)
+                # il noise ha dimensione 64x100 (64 immagini, un immagine per ogni riga )
+                # ECCO IL MISTERIOSO EMBEDDING
+                # al noise vengono aggiunte 10 colonne, che sono le 10 colonne delle label, quindi ogni riga di gen_input è 100 pixel di noise + 10 float che rappresentano la label che vogliamo per quell'immagine. Questo è l'embedding
+                gen_input = torch.cat((self.label_embed(labels), noise), -1)
+                print("conditional vector size",
+                      self.label_embed(labels).size())
+                print("Input to generator size", gen_input.size())
+            else:
+                '''
+                        tentativo1: concateniamo al noise direttamente il vettore binario coi 40 attributi, senza nessun mapping. labels sarà una matrice binaria
+                        di 64x40
+                '''
+            #	print("Requested labels", labels.size(), labels)
+                gen_input = torch.cat((labels, noise), -1)
+            #	print("conditional vector size", labels.size())
+            #	print("Input to generator size",gen_input.size())
+
+            img = self.generator(gen_input)
+            # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
+            img = img.view(img.size(0), *self.img_shape)
+            return img
 
 
 class Discriminator(nn.Module):
