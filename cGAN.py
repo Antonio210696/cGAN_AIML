@@ -50,6 +50,8 @@ class Generator(nn.Module):
 
         self.generator_step1 = nn.Sequential(
             nn.Linear(latentdim + n_classes, self.depth),
+            nn.LeakyReLU(bias=False),
+            nn.Linear(self.depth, self.depth),
             nn.Sigmoid()
         )
         self.generator_step2=nn.Sequential(
@@ -60,11 +62,11 @@ class Generator(nn.Module):
             nn.BatchNorm2d(64 * 4),
             nn.ReLU(True),
             # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64 * 2),
-            nn.ReLU(True),
+            # nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
+            # nn.BatchNorm2d(64 * 2),
+            # nn.ReLU(True),
             # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(64 *4, 64, 4, 2, 1, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(True),
             # state size. (ngf) x 32 x 32
