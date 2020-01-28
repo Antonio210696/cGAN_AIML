@@ -49,11 +49,11 @@ class Generator(nn.Module):
             return layers
 
         self.generator_step1 = nn.Sequential(
-            nn.Linear(latentdim + n_classes, self.depth*3),
+            nn.Linear(latentdim + n_classes, self.depth),
             nn.LeakyReLU(),
-            nn.Linear(self.depth*3, self.depth*2),
+            nn.Linear(self.depth, self.depth),
             nn.LeakyReLU(),
-            nn.Linear(self.depth*2, self.depth),
+            nn.Linear(self.depth, self.depth),
             nn.Sigmoid()
         )
         self.generator_step2=nn.Sequential(
@@ -113,11 +113,11 @@ class Discriminator(nn.Module):
         self.depth = 64 * 64 * nc
         self.dataset_name = dataset_name
         self.linear = nn.Sequential(
-            nn.Linear(n_classes + int(np.prod(img_shape)), self.depth*3),
+            nn.Linear(n_classes + int(np.prod(img_shape)), self.depth),
             nn.LeakyReLU(),
-            nn.Linear(self.depth * 3, self.depth * 2),
+            nn.Linear(self.depth, self.depth),
             nn.LeakyReLU(),
-            nn.Linear(self.depth * 2, self.depth)
+            nn.Linear(self.depth, self.depth)
         )
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
