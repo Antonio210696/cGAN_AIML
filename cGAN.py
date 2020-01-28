@@ -38,7 +38,7 @@ class Generator(nn.Module):
                                         n_classes)  # mi crea un dizionario di 10 elementi, ogni elemento è a sua volta un vettore di 10 elementi
         self.dataset_name = dataset_name
         self.img_shape = img_shape
-        self.depth = 8192  # dimensione output primo layer
+        self.depth = 8000  # dimensione output primo layer
 
         def init(input, output, normalize=True):
             layers = [nn.Linear(input, output)]
@@ -55,23 +55,16 @@ class Generator(nn.Module):
             nn.Sigmoid()
         )
         self.generator_step2=nn.Sequential(
-            nn.BatchNorm2d(512),
+            nn.BatchNorm2d(80),
             nn.ReLU(),
-            # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(64 * 8, 64* 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64 * 4),
-            nn.ReLU(True),
-            # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(64 * 4, 64 * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64 * 2),
-            nn.ReLU(True),
-            # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(64 * 2, 64, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(True),
-            # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d(64, 3, 4, 2, 1, bias=False),
-            nn.Tanh()
+            nn.ConvTranspose2d(80, 40, 3, 1, bias=False),  # out 12
+            nn.BatchNorm2d(40),
+            nn.ReLU(),
+            nn.ConvTranspose2d(40, 20, 7, 1, bias=False),  # out 18
+            nn.BatchNorm2d(20),
+            nn.ReLU(),
+            nn.ConvTranspose2d(20, 3, 13, 3, bias=False),  # out 64
+            nn.ReLU(),
 
         )
 
@@ -98,7 +91,7 @@ class Generator(nn.Module):
         #	print("Input to generator size",gen_input.size())
 
         step1 = self.generator_step1(gen_input)
-        reshape=step1.view(b_size,512,4,4)
+        reshape=step1.view(b_size,80,10,10)
         img=self.generator_step2(reshape)
         img = img.view(img.size(0),
                        *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
