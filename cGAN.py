@@ -57,9 +57,8 @@ class Generator(nn.Module):
             #*init(self.depth * 4, self.depth * 8),
             nn.Linear(n_classes+latentdim, self.depth),
             nn.ReLU(),
-            nn.Linear(self.depth, self.depth*2),
+            nn.Linear(self.depth, self.depth),
             nn.ReLU(),
-            nn.Linear(self.depth*2, self.depth),
             nn.Sigmoid(),
             Reshape(batch_size, 80, 10, 10),
             nn.BatchNorm2d(80),
@@ -70,12 +69,8 @@ class Generator(nn.Module):
             nn.ConvTranspose2d(40, 20, 7, 1, bias=False), # out 18
             nn.BatchNorm2d(20),
             nn.ReLU(),
-            nn.ConvTranspose2d(20, 10, 9, 3, bias=False), # out 60
-            nn.BatchNorm2d(10),
+            nn.ConvTranspose2d(20, 3, 13, 3, bias=False), # out 60
             nn.ReLU(), 
-            nn.ConvTranspose2d(10, 3, 5, 1, bias=False), # out 64
-            nn.BatchNorm2d(3),
-            nn.ReLU(),
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()
         )
