@@ -50,7 +50,7 @@ class Generator(nn.Module):
 
         self.generator_step1 = nn.Sequential(
             nn.Linear(latentdim + n_classes, self.depth),
-            nn.LeakyReLU(bias=False),
+            nn.LeakyReLU(),
             nn.Linear(self.depth, self.depth),
             nn.Sigmoid()
         )
