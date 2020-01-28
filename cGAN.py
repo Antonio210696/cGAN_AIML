@@ -38,7 +38,7 @@ class Generator(nn.Module):
                                         n_classes)  # mi crea un dizionario di 10 elementi, ogni elemento è a sua volta un vettore di 10 elementi
         self.dataset_name = dataset_name
         self.img_shape = img_shape
-        self.depth = 8192  # dimensione output primo layer
+        self.depth = 8000  # dimensione output primo layer
 
         def init(input, output, normalize=True):
             layers = [nn.Linear(input, output)]
