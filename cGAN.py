@@ -40,7 +40,7 @@ class Generator(nn.Module):
         self.label_embed = nn.Embedding(n_classes, n_classes)
         self.dataset_name = dataset_name
         self.img_shape = img_shape
-        self.depth = 16000  # dimensione output primo layer
+        self.depth = 8000  # dimensione output primo layer
 
         def init(input, output, normalize=True):
             layers = [nn.Linear(input, output)]
@@ -61,16 +61,20 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.Linear(self.depth*2, self.depth),
             nn.Sigmoid(),
-            Reshape(batch_size, 40, 20, 20),
+            Reshape(batch_size, 80, 10, 10),
+            nn.BatchNorm2d(80),
+            nn.ReLU(),
+            nn.ConvTranspose2d(80, 40, 3, 1, bias=False), # out 12
             nn.BatchNorm2d(40),
             nn.ReLU(),
-            nn.ConvTranspose2d(40, 20, 7, 2, bias=False),  # out 46
+            nn.ConvTranspose2d(40, 20, 5, 2, bias=False), # out 27
             nn.BatchNorm2d(20),
             nn.ReLU(),
-            nn.ConvTranspose2d(20, 10, 5, 1, bias=False),  # out 50
+            nn.ConvTranspose2d(20, 10, 5, 2, bias=False), # out 50
             nn.BatchNorm2d(10),
-            nn.ReLU(),
-            nn.ConvTranspose2d(10, 3, 15, 1, bias=False),  # out 64
+            nn.ReLU(), 
+            nn.ConvTranspose2d(30, 3, 15, 1, bias=False), # out 64
+            nn.ReLU()
             # nn.Linear(self.depth * 8, int(np.prod(img_shape))), # np.prod ritorna il prodotto dei valori sugli axes - in questo caso il prodotto delle dimensioni dell'immagine
             # nn.Tanh()
         )
