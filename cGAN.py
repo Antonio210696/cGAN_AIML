@@ -63,21 +63,6 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(20, 3, 13, 3, bias=False),  # out 64
             nn.ReLU(),
-            #PrintLayer("fineCreazione"),
-            nn.Conv2d(3, 64, 4, 2, 1, bias=False), #64x32x32
-            nn.LeakyReLU(0.2, inplace=True),
-            #PrintLayer("dopo Conv1"),
-            nn.MaxPool2d(6, stride=1, padding=2, dilation=4), #64x16x16
-            #PrintLayer("dopoMaxPool1"),
-            nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),#64*2x8x8
-            #PrintLayer("Conv2"),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(4, stride=2, padding=1, dilation=1), #64*2x4x4
-            #PrintLayer("dopoMaxPool2")
-        )
-        self.generator_step3 = nn.Sequential(
-            nn.Linear(64*2*4*4,3*64*64),
-            nn.LeakyReLU(0.2, inplace=True)
         )
 
     # torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
@@ -104,9 +89,7 @@ class Generator(nn.Module):
 
         step1 = self.generator_step1(gen_input)
         reshape=step1.view(b_size,80,10,10)
-        img=self.generator_step2(reshape)
-        reshape2=img.view(b_size,1,1,64*2*4*4)
-        img=self.generator_step3(reshape2).view(b_size,3, 64, 64)
+        img=self.generator_step2(reshape).view(b_size,3, 64, 64)
         img = img.view(img.size(0),
                        *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
         return img
@@ -153,13 +136,3 @@ class Discriminator(nn.Module):
         inpu = self.linear(inpu).view(b_size, 3, 64, 64)
         validity = self.main(inpu)
         return validity
-
-class PrintLayer(nn.Module):
-    def __init__(self, layer):
-        super(PrintLayer, self).__init__()
-        self.layer=layer
-
-    def forward(self, x):
-        # Do your print / debug stuff here
-        print("Shape after %s is "%self.layer, x.size())
-        return x
