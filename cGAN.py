@@ -63,12 +63,17 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(20, 3, 13, 3, bias=False),  # out 64
             nn.ReLU(),
+            nn.PrintLayer("fineCreazione"),
             nn.Conv2d(3, 64, 4, 2, 1, bias=False), #64x32x32
             nn.LeakyReLU(0.2, inplace=True),
+            nn.PrintLayer("dopo Conv1"),
             nn.MaxPool2d(6, stride=1, padding=2, dilation=4), #64x16x16
+            nn.PrintLayer("dopoMaxPool1"),
             nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),#64*2x8x8
+            nn.PrintLayer("Conv2"),
             nn.LeakyReLU(0.2, inplace=True),
             nn.MaxPool2d(4, stride=1, padding=0, dilation=1), #64*2x4x4
+            nn.PrintLayer("dopoMaxPool2")
         )
         self.generator_step3 = nn.Sequential(
             nn.Linear(64*2*4*4,3*64*64),
@@ -148,3 +153,12 @@ class Discriminator(nn.Module):
         inpu = self.linear(inpu).view(b_size, 3, 64, 64)
         validity = self.main(inpu)
         return validity
+
+    class PrintLayer(nn.Module):
+        def __init__(self):
+            super(PrintLayer, self).__init__()
+
+        def forward(self, x, layer):
+            # Do your print / debug stuff here
+            print("Shape after %s is "%layer, x.size())
+            return x
