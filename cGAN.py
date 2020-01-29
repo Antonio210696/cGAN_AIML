@@ -155,10 +155,11 @@ class Discriminator(nn.Module):
         return validity
 
 class PrintLayer(nn.Module):
-    def __init__(self):
+    def __init__(self, layer):
         super(PrintLayer, self).__init__()
+        self.layer=layer
 
-    def forward(self, x, layer):
+    def forward(self, x):
         # Do your print / debug stuff here
-        print("Shape after %s is "%layer, x.size())
+        print("Shape after %s is "%self.layer, x.size())
         return x
