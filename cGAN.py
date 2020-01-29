@@ -50,8 +50,6 @@ class Generator(nn.Module):
 
         self.generator_step1 = nn.Sequential(
             nn.Linear(latentdim + n_classes, self.depth),
-            nn.LeakyReLU(),
-            nn.Linear(self.depth, self.depth),
             nn.Sigmoid()
         )
         self.generator_step2=nn.Sequential(
@@ -65,7 +63,14 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(20, 3, 13, 3, bias=False),  # out 64
             nn.ReLU(),
-
+            nn.Conv2d(3, 64, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.MaxPool2d(5, stride=1, padding=15, dilation=3),
+            nn.Conv2d(3, 64, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.MaxPool2d(5, stride=1, padding=15, dilation=3),
+            nn.Linear(3*64*64,3*64*64),
+            nn.LeakyReLU(0.2, inplace=True)
         )
 
     # torchcat needs to combine tensors --> l'embedding delle features sta tutto qui...
@@ -92,7 +97,7 @@ class Generator(nn.Module):
 
         step1 = self.generator_step1(gen_input)
         reshape=step1.view(b_size,80,10,10)
-        img=self.generator_step2(reshape)
+        img=self.generator_step2(reshape).view(b_size,3, 64, 64)
         img = img.view(img.size(0),
                        *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
         return img
@@ -106,7 +111,6 @@ class Discriminator(nn.Module):
         self.linear = nn.Sequential(
             nn.Linear(n_classes + int(np.prod(img_shape)), self.depth),
             nn.LeakyReLU(),
-            nn.Linear(self.depth, self.depth),
         )
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
