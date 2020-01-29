@@ -63,13 +63,13 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(20, 3, 13, 3, bias=False),  # out 64
             nn.ReLU(),
-            nn.Conv2d(3, 64, 4, 2, 1, bias=False),
+            nn.Conv2d(3, 64, 4, 2, 1, bias=False), #64x32x32
             nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(5, stride=1, padding=15, dilation=3),
-            nn.Conv2d(3, 64, 4, 2, 1, bias=False),
+            nn.MaxPool2d(6, stride=1, padding=2, dilation=4), #64x16x16
+            nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),#64*2x8x8
             nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(5, stride=1, padding=15, dilation=3),
-            nn.Linear(3*64*64,3*64*64),
+            nn.MaxPool2d(4, stride=1, padding=0, dilation=1), #64*2x4x4
+            nn.Linear(64*2*4*4,3*64*64),
             nn.LeakyReLU(0.2, inplace=True)
         )
 
