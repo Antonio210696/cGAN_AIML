@@ -72,7 +72,7 @@ class Generator(nn.Module):
             nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),#64*2x8x8
             PrintLayer("Conv2"),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(4, stride=1, padding=0, dilation=1), #64*2x4x4
+            nn.MaxPool2d(4, stride=2, padding=1, dilation=1), #64*2x4x4
             PrintLayer("dopoMaxPool2")
         )
         self.generator_step3 = nn.Sequential(
