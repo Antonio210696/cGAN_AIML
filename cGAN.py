@@ -69,6 +69,8 @@ class Generator(nn.Module):
             nn.Conv2d(64, 64 * 2, 4, 2, 1, bias=False),#64*2x8x8
             nn.LeakyReLU(0.2, inplace=True),
             nn.MaxPool2d(4, stride=1, padding=0, dilation=1), #64*2x4x4
+        )
+        self.generator_step3 = nn.Sequential(
             nn.Linear(64*2*4*4,3*64*64),
             nn.LeakyReLU(0.2, inplace=True)
         )
@@ -97,7 +99,9 @@ class Generator(nn.Module):
 
         step1 = self.generator_step1(gen_input)
         reshape=step1.view(b_size,80,10,10)
-        img=self.generator_step2(reshape).view(b_size,3, 64, 64)
+        img=self.generator_step2(reshape)
+        reshape2.view(b_size,1,64*2*4*4,1)
+        img=self.generator_step3(reshape2).view(b_size,3, 64, 64)
         img = img.view(img.size(0),
                        *self.img_shape)  # view è un reshape per ottenere dal vettore in output un immagine con le 64 immagini generate dentro
         return img
